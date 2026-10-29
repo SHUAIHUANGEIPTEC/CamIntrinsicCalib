@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "camcalib"
+version = "1.0.0"
+description = "相机内参标定工具：KB 鱼眼 / Brown 模型，可选 OpenCV 3.2.0 位级后端"
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = ["numpy"]
+
+[project.optional-dependencies]
+cv2 = ["opencv-python"]
+
+[project.scripts]
+camcalib = "calib.cli:main"
+
+[tool.setuptools]
+packages = ["calib"]

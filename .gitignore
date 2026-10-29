@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.egg-info/
+
+# 工具与 IDE 本地配置
+.mimocode/
+.vscode/
+
+# 运行产物（日志、角点缓存、调试图）
+artifacts/
+
+# 第三方二进制与大数据集（获取方式见 README「环境依赖」）
+lib/*.dll
+data/img/*
+!data/img/0.png

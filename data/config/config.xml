@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<opencv_storage>
+<r_board>960</r_board>
+<!--以图像中心画圆，rboard为半径,单位pixel，在该圆内的棋盘格保留-->
+
+<image_width> 1920 </image_width>
+<image_height> 1536</image_height>
+<!--图像大小,宽和高-->
+
+<board_size_width> 11 </board_size_width>
+<board_size_height> 8 </board_size_height>
+<!--棋盘格大小,宽和高,是角点数-->
+
+<square_size_width> 40 </square_size_width>
+<square_size_height> 40 </square_size_height>
+<!--棋盘格块尺寸,宽和高,单位mm-->
+
+<num_frame_save> 1 </num_frame_save>
+<!--保存图片的间隔帧数,针对视频模式-->
+
+<calib_mode> 4 </calib_mode>
+<!--标定模式-->
+<!--[0]田字格4视频模式-->
+<!--[1]田字格4图片模式-->
+<!--[2]竖直排列4视频模式-->
+<!--[3]竖直排列4图片模式-->
+<!--[4]一个视频模式-->
+<!--[5]一个图片模式-->
+<!--[6]txt输入角点模式-->
+
+<id_cam> 0 </id_cam>
+<!--从4个相机中选择1个,适配calib_mode=(0,1,2,3)-->
+<!--[0]不选择,所有都标-->
+<!--[1]田字格左上或者竖直第1个-->
+<!--[2]田字格右上或者竖直第2个-->
+<!--[3]田字格左下或者竖直第3个-->
+<!--[4]田字格右下或者竖直第4个-->
+</opencv_storage>
