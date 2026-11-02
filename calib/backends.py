@@ -102,11 +102,19 @@ class CV2Backend(object):
         op = obj.astype(np.float32).reshape(len(obj), 1, -1, 3)
         ip = img.astype(np.float32).reshape(len(img), 1, -1, 2)
         f0 = self._estimate_f0(obj, img, size) or (1.5 * size[0])
+        # 初值序列分两阶段：
+        # 1) 围绕 Zhang 估计值的邻域 scale 快速路径（普通相机首选初值即命中）；
+        # 2) 宽域对数网格兜底 —— Zhang 是针孔假设，对强鱼眼系统性偏大
+        #    （实测本工程实例：f0=2568 而真值 552，邻域下界 0.6*f0=1541 仍差
+        #    ~2.8 倍，全落空导致误降级 Brown）。fisheye 收敛带窄（约
+        #    [1.0, 1.36]×f_true），故用 1.12 细网格保证必有点落入带内。
+        seq = [f0 * s for s in (1.0, 0.9, 1.1, 0.8, 1.25, 0.75, 1.5, 0.6)]
+        f, hi = 0.04 * size[0], 30.0 * size[0]     # FOV≈176° ~ 超长焦
+        while f <= hi:
+            seq.append(f)
+            f *= 1.12
         best = None
-        # 围绕 Zhang 估计值邻域扫描（fisheye 收敛域有限，广角/长焦均能覆盖）；
-        # 首选初值（scale=1.0）已收敛且 rms 足够好时直接返回，避免无谓的多轮重标
-        for scale in (1.0, 0.9, 1.1, 0.8, 1.25, 0.75, 1.5, 0.6):
-            f = f0 * scale
+        for f in seq:
             K = np.array([[f, 0, size[0] / 2.], [0, f, size[1] / 2.], [0, 0, 1.]])
             D = np.zeros((4, 1))
             try:
@@ -119,7 +127,7 @@ class CV2Backend(object):
             if best is None or rms < best[0]:
                 best = (float(rms), np.array(Ko, np.float64),
                         np.array(Do, np.float64).ravel()[:4], rv, tv)
-            # rms 已达亚像素量级（<1px）即认为收敛，不再扫后续 scale
+            # rms 已达亚像素量级（<1px）即认为收敛，不再扫后续初值
             if best is not None and best[0] < 1.0:
                 break
         if best is None:

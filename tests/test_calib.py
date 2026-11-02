@@ -221,6 +221,28 @@ def test_calibration_reference_matches():
     assert np.abs(Dm - D_REF).max() < 1e-9
 
 
+def test_cv2_backend_kb_reference():
+    # 回归（无 OpenCV 3.2.0 DLL 环境的主路径）：cv2 降级后端 KB 标定。
+    # Zhang 针孔初值对强鱼眼系统性偏大（本实例 f0=2568 vs 真值 552，而
+    # fisheye 收敛带窄 ≈[1.0,1.36]×f_true），初值序列必须有宽域对数网格
+    # 兜底，否则全部初值失败 → 误降级 Brown（rms≈5px 的坏结果）。
+    ref = _ref_txt("imgPoint_intrinsic.txt")
+    wref = _ref_txt("wordPoint_intrinsic.txt")
+    if not (ref and wref):
+        return _skip("无参考角点/物点 txt")
+    if not _need_cv2():
+        return _skip("无 cv2 环境")
+    from calib.backends import CV2Backend
+    n, bw, bh, ip = load_points(ref, 2)
+    _, _, _, op = load_points(wref, 3)
+    rms, K, D, rv, tv = CV2Backend().calibrate(op, ip, (1920, 1536))
+    assert rms < 1.0, "KB 降级路径 rms 过大（未收敛到好解）: %.4f" % rms
+    dK = np.abs(K - K_REF).max()
+    dD = np.abs(np.asarray(D).ravel()[:4] - D_REF).max()
+    assert dK < 1e-4, "K 与参考偏差过大: %.3e px" % dK
+    assert dD < 1e-6, "D 与参考偏差过大: %.3e" % dD
+
+
 def test_undistort_matches_reference():
     # 用参考 K/D 复算去畸变，应与 data/reference 的 *_d.png 逐像素一致
     import cv2
